@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Love</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial;
+
+    background: linear-gradient(270deg, #0f001a, #1a0033, #000);
+    background-size: 600% 600%;
+    animation: bgMove 12s ease infinite;
+}
+
+@keyframes bgMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* 💖 TRÁI TIM = ẢNH */
+.heart {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    transform: rotate(-45deg);
+
+    background: url("girl.jpg") center/cover no-repeat;
+
+    animation: beat 1s infinite;
+    box-shadow: 0 0 80px rgba(255,0,100,0.8);
+    z-index: 10;
+
+    filter: brightness(0.9) saturate(1.2);
+}
+
+.heart::before,
+.heart::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: inherit;
+    border-radius: 50%;
+}
+
+.heart::before { top: -110px; }
+.heart::after { left: 110px; }
+
+/* TÊN */
+.name {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    text-shadow: 0 0 10px pink;
+    transform: rotate(45deg);
+}
+
+/* TIM ĐẬP */
+@keyframes beat {
+    0%,100% { transform: rotate(-45deg) scale(1); }
+    50% { transform: rotate(-45deg) scale(1.15); }
+}
+
+/* 💬 CHỮ BAY */
+.love-text {
+    position: absolute;
+    color: pink;
+    font-size: 16px;
+    white-space: nowrap;
+    text-shadow: 0 0 10px #ff99cc;
+    animation: floatText linear forwards;
+
+    z-index: 999;
+    pointer-events: none;
+}
+
+@keyframes floatText {
+    from {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+    20% { opacity: 1; }
+    to {
+        transform: translateY(-600px) translateX(50px);
+        opacity: 0;
+    }
+}
+
+/* ✨ SAO XOAY */
+.star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    animation: orbit linear infinite;
+}
+
+@keyframes orbit {
+    from { transform: rotate(0deg) translateX(200px); }
+    to { transform: rotate(360deg) translateX(200px); }
+}
+
+/* 🌟 PARTICLE */
+.particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    opacity: 0.8;
+    animation: floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+    from { transform: translateY(0); }
+    to { transform: translateY(-800px); }
+}
+
+/* 💖 TIM MỜ */
+.bg-heart {
+    position: absolute;
+    color: rgba(255, 100, 150, 0.15);
+    animation: floatHeart 10s linear infinite;
+}
+
+@keyframes floatHeart {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-800px) scale(1.5); }
+}
+
+/* 🌠 SAO BĂNG */
+.shooting-star {
+    position: absolute;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, white, transparent);
+    transform: rotate(45deg);
+    animation: shoot 1s linear forwards;
+}
+
+@keyframes shoot {
+    from { transform: translate(0,0) rotate(45deg); opacity:1;}
+    to { transform: translate(600px,600px) rotate(45deg); opacity:0;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="heart">
+    <div class="name">Mỹ Gái Nhật Baby 💖</div>
+</div>
+
+<script>
+const texts = [
+"Anh yêu em 💖","Mãi bên nhau nhé 💕","Em là tất cả 🌸",
+"Yêu em nhiều lắm 😘","Đừng rời xa anh ❤️",
+"Only you 💞","Cả thế giới của anh 🌍","Nhớ em mỗi ngày 💓"
+];
+
+/* TEXT */
+function createText(){
+    let t = document.createElement("div");
+    t.className = "love-text";
+    t.innerHTML = texts[Math.floor(Math.random()*texts.length)];
+
+    t.style.left = Math.random()*window.innerWidth+"px";
+    t.style.top = window.innerHeight+"px";
+    t.style.animationDuration = (Math.random()*4 + 6)+"s";
+
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),8000);
+}
+setInterval(createText, 500);
+
+/* STAR ORBIT */
+for(let i = 0; i < 40; i++){
+    let star = document.createElement("div");
+    star.className = "star";
+    star.style.animationDuration = (Math.random()*5+5)+"s";
+    star.style.top = "50%";
+    star.style.left = "50%";
+    document.body.appendChild(star);
+}
+
+/* PARTICLE */
+function createParticle(){
+    let p = document.createElement("div");
+    p.className = "particle";
+    p.style.left = Math.random()*window.innerWidth+"px";
+    p.style.top = window.innerHeight+"px";
+    p.style.animationDuration = (Math.random()*5+5)+"s";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),10000);
+}
+setInterval(createParticle, 120);
+
+/* BG HEART */
+function createBgHeart(){
+    let h = document.createElement("div");
+    h.className = "bg-heart";
+    h.innerHTML = "💖";
+    h.style.left = Math.random()*window.innerWidth+"px";
+    h.style.top = window.innerHeight+"px";
+    h.style.fontSize = (Math.random()*20+20)+"px";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),10000);
+}
+setInterval(createBgHeart, 600);
+
+/* SHOOTING STAR */
+function createStar(){
+    let s = document.createElement("div");
+    s.className = "shooting-star";
+    s.style.left = Math.random()*window.innerWidth+"px";
+    s.style.top = Math.random()*window.innerHeight/2+"px";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1000);
+}
+setInterval(createStar, 2500);
+</script>
+
+</body>
+</html>

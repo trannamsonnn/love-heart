@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gửi em / anh — Trái tim dưới bầu trời sao</title>
+  <style>
+    :root{
+      --pink:#ff6fa3;
+      --font-sans:'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#000;font-family:var(--font-sans);}
+
+    canvas#starsCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+
+    .stage{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:2;}
+    canvas#heartCanvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:3;}
+
+    .halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;height:460px;border-radius:50%;background:radial-gradient(circle at 40% 30%, rgba(255,111,163,0.14), rgba(255,111,163,0.06) 35%, transparent 60%);filter:blur(18px);z-index:4;pointer-events:none;}
+
+    .phrases{position:absolute;inset:0;z-index:5;pointer-events:none}
+    .phrase{position:absolute;white-space:nowrap;font-weight:600;user-select:none;text-shadow:0 2px 8px rgba(0,0,0,0.6);font-size:18px;opacity:0;transform:translateY(30px) scale(0.95);animation:floatUp 8s linear forwards;}
+    @keyframes floatUp{0%{opacity:0;transform:translateY(30px) scale(0.95)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateY(-120px) scale(1.02)}}
+
+    .music-control{position:fixed;right:18px;bottom:18px;z-index:30;display:flex;gap:8px;align-items:center;}
+    .btn{cursor:pointer;border:0;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,0.06);color:#fff;font-weight:700;backdrop-filter: blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.6);}
+
+    .note{position:fixed;left:18px;bottom:18px;z-index:30;color:#ddd;font-size:13px;background:rgba(0,0,0,0.25);padding:8px 10px;border-radius:10px}
+
+    @media (max-width:520px){.halo{width:300px;height:300px}}
+  </style>
+</head>
+<body>
+  <canvas id="starsCanvas"></canvas>
+  <div class="stage">
+    <canvas id="heartCanvas"></canvas>
+    <div class="halo"></div>
+    <div class="phrases" id="phrases"></div>
+    <div class="music-control">
+      <button id="playBtn" class="btn">Play ♫</button>
+      <button id="muteBtn" class="btn">Mute</button>
+    </div>
+    <div class="note">Nhấn vào nền để nở ra những trái tim nhỏ 💕</div>
+    <audio id="music" src="https://cdn.pixabay.com/audio/2023/03/01/audio_7b8b7a72a4.mp3" loop></audio>
+  </div>
+
+  <script>
+    // Bầu trời sao + sao băng
+    const starCanvas=document.getElementById('starsCanvas');
+    const sctx=starCanvas.getContext('2d');
+    let stars=[],shootingStars=[];
+    const numStars=400;
+
+    function resizeStars(){starCanvas.width=window.innerWidth;starCanvas.height=window.innerHeight;}
+    window.addEventListener('resize',resizeStars);
+    function initStars(){
+      stars=[];
+      for(let i=0;i<numStars;i++){
+        stars.push({x:Math.random()*starCanvas.width,y:Math.random()*starCanvas.height,size:Math.random()*2,alpha:Math.random(),speed:Math.random()*0.05+0.02});
+      }
+    }
+    function drawStars(){
+      sctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+      sctx.fillStyle='#fff';
+      stars.forEach(s=>{
+        s.alpha+= (Math.random()-0.5)*0.05;
+        if(s.alpha<0.1) s.alpha=0.1; if(s.alpha>1) s.alpha=1;
+        s.y+=s.speed; if(s.y>starCanvas.height) s.y=0;
+        sctx.globalAlpha=s.alpha;
+        sctx.beginPath();
+        sctx.arc(s.x,s.y,s.size,0,2*Math.PI);
+        sctx.fill();
+      });
+      sctx.globalAlpha=1;
+      shootingStars.forEach(s=>{
+        s.x+=s.vx; s.y+=s.vy; s.life--;
+        const grad=sctx.createLinearGradient(s.x,s.y,s.x-s.vx*10,s.y-s.vy*10);
+        grad.addColorStop(0,'rgba(255,255,255,1)');
+        grad.addColorStop(1,'rgba(255,255,255,0)');
+        sctx.strokeStyle=grad;
+        sctx.lineWidth=2;
+        sctx.beginPath();
+        sctx.moveTo(s.x,s.y);
+        sctx.lineTo(s.x-s.vx*10,s.y-s.vy*10);
+        sctx.stroke();
+      });
+      shootingStars=shootingStars.filter(s=>s.life>0);
+      if(Math.random()<0.005){shootingStars.push({x:Math.random()*starCanvas.width,y:Math.random()*starCanvas.height*0.5,vx:8+Math.random()*4,vy:4+Math.random()*2,life:60});}
+      requestAnimationFrame(drawStars);
+    }
+    resizeStars();initStars();drawStars();
+
+    // Trái tim lớn
+    const cw=()=>window.innerWidth,ch=()=>window.innerHeight;
+    (function(){
+      const c=document.getElementById('heartCanvas');const ctx=c.getContext('2d');
+      function resize(){c.width=cw();c.height=ch();drawHeart();}
+      window.addEventListener('resize',resize);
+      function heartPoint(t,sx,sy,cx,cy){const x=16*Math.pow(Math.sin(t),3);const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);return{x:cx+sx*x,y:cy-sy*y};}
+      function drawSmallHeart(x,y,size,alpha){ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#ff6fa3';ctx.beginPath();const s=size/20;ctx.moveTo(x,y);ctx.bezierCurveTo(x,y-3*s,x-6*s,y-10*s,x-12*s,y-4*s);ctx.bezierCurveTo(x-16*s,y+4*s,x-8*s,y+12*s,x,y+18*s);ctx.bezierCurveTo(x+8*s,y+12*s,x+16*s,y+4*s,x+12*s,y-4*s);ctx.bezierCurveTo(x+6*s,y-10*s,x,y-3*s,x,y);ctx.fill();ctx.restore();}
+      function drawHeart(){ctx.clearRect(0,0,c.width,c.height);const cx=c.width/2,cy=c.height/2+20;const baseScale=Math.min(c.width,c.height)/40;const points=[];for(let t=0;t<Math.PI*2;t+=0.03){points.push(heartPoint(t,baseScale,baseScale,cx,cy));}for(const p of points){const rx=(Math.random()-0.5)*baseScale*1.1;const ry=(Math.random()-0.5)*baseScale*1.1;drawSmallHeart(p.x+rx,p.y+ry,Math.random()*10+6,0.95);}for(let i=0;i<900;i++){const ang=Math.random()*Math.PI*2;const r=Math.random()*baseScale*8;const x=cx+Math.cos(ang)*r*0.6+(Math.random()-0.5)*6;const y=cy+Math.sin(ang)*r*0.6+(Math.random()-0.5)*6;drawSmallHeart(x,y,Math.random()*8+4,0.95);}}
+      resize();let pulse=0;function animate(){pulse+=0.02;c.style.transform=`scale(${1+0.015*Math.sin(pulse)})`;requestAnimationFrame(animate);}animate();})();
+
+    // Câu nói bay
+    (function(){const phrases=['Anh yêu em nhiều lắm ❤️','Em là cả một vũ trụ của anh 🌌','Mỗi ngày bên em là một bản nhạc ngọt ngào','Yêu em hơn từng giây phút','Em là lý do anh mỉm cười','You are my sweetest melody','With you, forever feels short','Anh nhớ nụ cười của em','Em là nhà của anh','Mãi mãi nhé, my love'];const container=document.getElementById('phrases');function spawnPhrase(){const el=document.createElement('div');el.className='phrase';el.style.left=Math.random()*(window.innerWidth*0.85)+'px';el.style.top=Math.random()*(window.innerHeight*0.7)+'px';el.style.fontSize=(14+Math.random()*10)+'px';el.style.color=Math.random()>0.6?'#ffd6e6':'#fff1f6';el.textContent=phrases[Math.floor(Math.random()*phrases.length)];container.appendChild(el);setTimeout(()=>{el.remove();},9000+Math.random()*2000);}setInterval(spawnPhrase,1400);for(let i=0;i<6;i++)setTimeout(spawnPhrase,i*400);})();
+
+    // Nhạc
+    (function(){const music=document.getElementById('music');const playBtn=document.getElementById('playBtn');const muteBtn=document.getElementById('muteBtn');let playing=false;playBtn.addEventListener('click',async()=>{try{if(!playing){await music.play();playBtn.textContent='Pause ⏸';playing=true;}else{music.pause();playBtn.textContent='Play ♫';playing=false;}}catch(e){alert('Vui lòng bấm Play để phát nhạc.');}});muteBtn.addEventListener('click',()=>{music.muted=!music.muted;muteBtn.textContent=music.muted?'Unmute':'Mute';});})();
+  </script>
+</body>
+</html>
